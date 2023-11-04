@@ -3,7 +3,7 @@ use std::{
     result::Result,
 };
 
-use casper_node::types::Deploy;
+use master_node::types::Deploy;
 
 use super::{Database, DeserializationError};
 
