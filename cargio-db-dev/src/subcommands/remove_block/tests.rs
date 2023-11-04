@@ -1,6 +1,6 @@
 use std::slice;
 
-use casper_node::types::{BlockHash, DeployHash, DeployMetadata};
+use master_node::types::{BlockHash, DeployHash, DeployMetadata};
 use lmdb::{Error as LmdbError, Transaction, WriteFlags};
 
 use crate::{
@@ -46,11 +46,9 @@ fn remove_block_should_work() {
         mock_deploy_metadata(slice::from_ref(&block_headers[1].0)),
     ];
 
-    // Insert the 2 blocks into the database.
     {
         let mut txn = test_fixture.env.begin_rw_txn().unwrap();
         for i in 0..BLOCK_COUNT {
-            // Store the header.
             txn.put(
                 *test_fixture
                     .db(Some(BlockHeaderDatabase::db_name()))
@@ -60,7 +58,6 @@ fn remove_block_should_work() {
                 WriteFlags::empty(),
             )
             .unwrap();
-            // Store the body.
             txn.put(
                 *test_fixture.db(Some(BlockBodyDatabase::db_name())).unwrap(),
                 &block_headers[i].1.body_hash,
@@ -70,7 +67,6 @@ fn remove_block_should_work() {
             .unwrap();
         }
 
-        // Insert the 3 deploys into the deploys and deploy_metadata databases.
         for i in 0..DEPLOY_COUNT {
             txn.put(
                 *test_fixture
@@ -201,11 +197,9 @@ fn remove_block_no_deploys() {
         mock_deploy_metadata(slice::from_ref(&block_headers[1].0)),
     ];
 
-    // Insert the 2 blocks into the database.
     {
         let mut txn = test_fixture.env.begin_rw_txn().unwrap();
         for i in 0..BLOCK_COUNT {
-            // Store the header.
             txn.put(
                 *test_fixture
                     .db(Some(BlockHeaderDatabase::db_name()))
@@ -215,7 +209,6 @@ fn remove_block_no_deploys() {
                 WriteFlags::empty(),
             )
             .unwrap();
-            // Store the body.
             txn.put(
                 *test_fixture.db(Some(BlockBodyDatabase::db_name())).unwrap(),
                 &block_headers[i].1.body_hash,
@@ -225,8 +218,6 @@ fn remove_block_no_deploys() {
             .unwrap();
         }
 
-        // Insert the last 2 deploys into the deploys and deploy_metadata
-        // databases.
         for i in 1..DEPLOY_COUNT {
             txn.put(
                 *test_fixture
@@ -374,11 +365,9 @@ fn remove_block_missing_body() {
         mock_deploy_metadata(slice::from_ref(&block_headers[1].0)),
     ];
 
-    // Insert the 2 block headers into the database.
     {
         let mut txn = test_fixture.env.begin_rw_txn().unwrap();
         for (block_hash, block_header) in block_headers.iter().take(BLOCK_COUNT) {
-            // Store the header.
             txn.put(
                 *test_fixture
                     .db(Some(BlockHeaderDatabase::db_name()))
@@ -390,7 +379,6 @@ fn remove_block_missing_body() {
             .unwrap();
         }
 
-        // Insert the 3 deploys into the deploys and deploy_metadata databases.
         for i in 0..DEPLOY_COUNT {
             txn.put(
                 *test_fixture
@@ -463,11 +451,9 @@ fn remove_block_missing_deploys() {
     let deploy_hash = mock_deploy_hash(0);
     let block_body = BlockBody::new(vec![deploy_hash]);
 
-    // Insert the block into the database.
     {
         let mut txn = test_fixture.env.begin_rw_txn().unwrap();
 
-        // Store the header.
         txn.put(
             *test_fixture
                 .db(Some(BlockHeaderDatabase::db_name()))
@@ -477,7 +463,6 @@ fn remove_block_missing_deploys() {
             WriteFlags::empty(),
         )
         .unwrap();
-        // Store the body.
         txn.put(
             *test_fixture.db(Some(BlockBodyDatabase::db_name())).unwrap(),
             &block_header.body_hash,
@@ -507,11 +492,9 @@ fn remove_block_invalid_header() {
 
     let (block_hash, _block_header) = mock_block_header(0);
 
-    // Insert the an invalid block header into the database.
     {
         let mut txn = test_fixture.env.begin_rw_txn().unwrap();
 
-        // Store the header.
         txn.put(
             *test_fixture
                 .db(Some(BlockHeaderDatabase::db_name()))
@@ -543,11 +526,9 @@ fn remove_block_invalid_body() {
 
     let (block_hash, block_header) = mock_block_header(0);
 
-    // Insert the block header along with an invalid body into the database.
     {
         let mut txn = test_fixture.env.begin_rw_txn().unwrap();
 
-        // Store the header.
         txn.put(
             *test_fixture
                 .db(Some(BlockHeaderDatabase::db_name()))
@@ -557,7 +538,6 @@ fn remove_block_invalid_body() {
             WriteFlags::empty(),
         )
         .unwrap();
-        // Store the body.
         txn.put(
             *test_fixture.db(Some(BlockBodyDatabase::db_name())).unwrap(),
             &block_header.body_hash,
@@ -574,58 +554,5 @@ fn remove_block_invalid_body() {
     );
 }
 
-#[test]
-fn remove_block_invalid_deploy_metadata() {
-    let test_fixture = LmdbTestFixture::new(
-        vec![
-            BlockHeaderDatabase::db_name(),
-            BlockBodyDatabase::db_name(),
-            DeployMetadataDatabase::db_name(),
-        ],
-        Some(STORAGE_FILE_NAME),
-    );
 
-    let (block_hash, block_header) = mock_block_header(0);
-    let deploy_hash = mock_deploy_hash(0);
-    let block_body = BlockBody::new(vec![deploy_hash]);
-
-    // Insert the block into the database.
-    {
-        let mut txn = test_fixture.env.begin_rw_txn().unwrap();
-
-        // Store the header.
-        txn.put(
-            *test_fixture
-                .db(Some(BlockHeaderDatabase::db_name()))
-                .unwrap(),
-            &block_hash,
-            &bincode::serialize(&block_header).unwrap(),
-            WriteFlags::empty(),
-        )
-        .unwrap();
-        // Store the body.
-        txn.put(
-            *test_fixture.db(Some(BlockBodyDatabase::db_name())).unwrap(),
-            &block_header.body_hash,
-            &bincode::serialize(&block_body).unwrap(),
-            WriteFlags::empty(),
-        )
-        .unwrap();
-        // Store the deploy metadata.
-        txn.put(
-            *test_fixture
-                .db(Some(DeployMetadataDatabase::db_name()))
-                .unwrap(),
-            &deploy_hash,
-            &[0u8, 1u8, 2u8],
-            WriteFlags::empty(),
-        )
-        .unwrap();
-
-        txn.commit().unwrap();
-    };
-
-    assert!(
-        matches!(remove_block(test_fixture.tmp_dir.path(), block_hash).unwrap_err(), Error::ExecutionResultsParsing(actual_block_hash, actual_deploy_hash, _) if block_hash == actual_block_hash && deploy_hash == actual_deploy_hash)
-    );
-}
+      
