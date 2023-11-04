@@ -43,15 +43,12 @@ fn unpack_mock_archive<P1: AsRef<Path>, P2: AsRef<Path>>(archive_path: P1, dst_d
 
 #[test]
 fn archive_create_roundtrip() {
-    // Create the mock test directory with randomly-filled files.
     let src_dir = &MOCK_DIR.0;
     let test_payloads = &MOCK_DIR.1;
     let dst_dir = tempfile::tempdir().unwrap();
     let out_dir = tempfile::tempdir().unwrap();
     let archive_path = dst_dir.path().join("test_archive.tar.zst");
-    // Create the compressed archive.
     assert!(pack::create_archive(src_dir, &archive_path, false).is_ok());
-    // Unpack and then delete the archive.
     unpack_mock_archive(&archive_path, &out_dir);
     for idx in 0..NUM_TEST_FILES {
         let contents = fs::read(out_dir.path().join(&format!("file_{idx}"))).unwrap();
@@ -63,20 +60,14 @@ fn archive_create_roundtrip() {
 
 #[test]
 fn archive_create_overwrite() {
-    // Create the mock test directory with randomly-filled files.
     let src_dir = &MOCK_DIR.0;
     let test_payloads = &MOCK_DIR.1;
     let dst_dir = tempfile::tempdir().unwrap();
     let out_dir = tempfile::tempdir().unwrap();
     let archive_path = dst_dir.path().join("test_archive.tar.zst");
-    // Create a mock existing file at the expected destination.
     fs::write(&archive_path, "dummy input").unwrap();
-    // File already exists, so creating the archive without the overwrite flag
-    // should fail.
     assert!(pack::create_archive(src_dir, &archive_path, false).is_err());
-    // Create the compressed archive with the overwrite set.
     assert!(pack::create_archive(src_dir, &archive_path, true).is_ok());
-    // Unpack and then delete the archive.
     unpack_mock_archive(&archive_path, &out_dir);
     for idx in 0..NUM_TEST_FILES {
         let contents = fs::read(out_dir.path().join(&format!("file_{idx}"))).unwrap();
@@ -92,14 +83,11 @@ fn archive_create_bad_input() {
     let root_dst = tempfile::tempdir().unwrap();
     let inexistent_file_path = root_dst.path().join("bogus_path");
 
-    // Source doesn't exist.
     assert!(pack::create_archive(&inexistent_file_path, &inexistent_file_path, false).is_err());
 
-    // Source is not a directory.
     let file = NamedTempFile::new().unwrap();
     assert!(pack::create_archive(file.path(), &inexistent_file_path, false).is_err());
 
-    // Destination directory doesn't exist.
     let root_dst = tempfile::tempdir().unwrap();
     assert!(pack::create_archive(
         src_dir,
@@ -108,7 +96,6 @@ fn archive_create_bad_input() {
     )
     .is_err());
 
-    // Destination directory isn't empty.
     let root_dst = tempfile::tempdir().unwrap();
     let existing_file = NamedTempFile::new_in(&root_dst).unwrap();
     assert!(pack::create_archive(src_dir, existing_file.path(), false).is_err());
