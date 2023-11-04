@@ -3,7 +3,7 @@ use std::{
     result::Result,
 };
 
-use casper_types::{bytesrepr::FromBytes, PublicKey};
+use cargio_types::{bytesrepr::FromBytes, PublicKey};
 
 use super::{Database, DeserializationError};
 
