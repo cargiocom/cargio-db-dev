@@ -8,8 +8,8 @@ mod tests;
 use std::{io::Error as IoError, path::Path};
 
 use bincode::Error as BincodeError;
-use casper_hashing::Digest;
-use casper_node::types::BlockHash;
+use cargio_hashing::Digest;
+use master_node::types::BlockHash;
 use clap::{Arg, ArgMatches, Command};
 use lmdb::Error as LmdbError;
 use thiserror::Error as ThisError;
@@ -22,7 +22,6 @@ const STATE_ROOT_HASH: &str = "state-root-hash";
 const OUTPUT: &str = "output";
 const SOURCE_DB_PATH: &str = "source-db-path";
 
-/// Errors encountered when running the `extract-slice` subcommand.
 #[derive(Debug, ThisError)]
 pub enum Error {
     #[error("Error (de)serializing items with bincode: {0}")]
