@@ -1,7 +1,6 @@
 mod common;
 mod logging;
 mod subcommands;
-#[cfg(test)]
 pub(crate) mod test_utils;
 
 use std::{fs::OpenOptions, process};
@@ -33,12 +32,12 @@ const VERSION_STRING: &str = concat!(
     "\n",
     "This version of ",
     crate_name!(),
-    " is compatible with casper-node version ",
-    env!("CASPER_NODE_VERSION")
+    " is compatible with master-node version ",
+    env!("MASTER_NODE_VERSION")
 );
 
 fn cli() -> Command<'static> {
-    Command::new("casper-db-utils")
+    Command::new("cargio-db")
         .version(VERSION_STRING)
         .about(crate_description!())
         .arg_required_else_help(true)
@@ -70,7 +69,6 @@ fn cli() -> Command<'static> {
 fn main() {
     let arg_matches = cli().get_matches();
 
-    // Initialize logger.
     arg_matches.value_of(LOGGING).map_or_else(
         || logging::init_term_logger().expect("Couldn't initialize terminal logger"),
         |path| {
