@@ -3,8 +3,8 @@ use std::{
     result::Result,
 };
 
-use casper_hashing::Digest;
-use casper_types::bytesrepr::FromBytes;
+use cargio_hashing::Digest;
+use cargio_types::bytesrepr::FromBytes;
 
 use super::{Database, DeserializationError};
 
