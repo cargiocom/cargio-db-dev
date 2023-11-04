@@ -16,15 +16,12 @@ const DB_PATH: &str = "db-path";
 const OVERWRITE: &str = "overwrite";
 const OUTPUT: &str = "output";
 
-/// Errors encountered when operating on the storage database.
 #[derive(Debug, ThisError)]
 pub enum Error {
     #[error("No blocks found in the block header database")]
     EmptyDatabase,
-    /// Parsing error on entry at index in the database.
     #[error("Error parsing element {0}: {1}")]
     Parsing(usize, BincodeError),
-    /// Database operation error.
     #[error("Error operating the database: {0}")]
     Database(#[from] LmdbError),
     #[error("Error serializing output: {0}")]
