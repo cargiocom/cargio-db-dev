@@ -4,8 +4,8 @@ use std::{
     slice,
 };
 
-use casper_node::types::{BlockHash, DeployHash};
-use casper_types::bytesrepr::ToBytes;
+use master_node::types::{BlockHash, DeployHash};
+use cargio_types::bytesrepr::ToBytes;
 use lmdb::{Transaction, WriteFlags};
 use once_cell::sync::Lazy;
 use rand::Rng;
@@ -43,35 +43,29 @@ fn check_chunk_count_after_partition() {
 
 #[test]
 fn check_summarize_map() {
-    // Empty map.
     assert_eq!(
         summarize_map(&BTreeMap::default()),
         CollectionStatistics::default()
     );
 
-    // 1 element map.
     let mut map = BTreeMap::default();
     map.insert(1, 1);
     assert_eq!(summarize_map(&map), CollectionStatistics::new(1.0, 1, 1));
 
-    // 2 different elements map.
     let mut map = BTreeMap::default();
     map.insert(1, 1);
     map.insert(2, 1);
     assert_eq!(summarize_map(&map), CollectionStatistics::new(1.5, 2, 2));
 
-    // 2 identical elements map.
     let mut map = BTreeMap::default();
     map.insert(1, 2);
     assert_eq!(summarize_map(&map), CollectionStatistics::new(1.0, 1, 1));
 
-    // 3 elements map.
     let mut map = BTreeMap::default();
     map.insert(1, 1);
     map.insert(4, 2);
     assert_eq!(summarize_map(&map), CollectionStatistics::new(3.0, 4, 4));
 
-    // 10 elements map.
     let mut map = BTreeMap::default();
     map.insert(1, 2);
     map.insert(3, 2);
@@ -260,10 +254,8 @@ fn execution_results_stats_should_succeed() {
     ];
 
     let env = &fixture.env;
-    // Insert the 3 blocks into the database.
     if let Ok(mut txn) = env.begin_rw_txn() {
         for i in 0..BLOCK_COUNT {
-            // Store the header.
             txn.put(
                 *fixture.db(Some("block_header")).unwrap(),
                 &block_headers[i].0,
@@ -271,7 +263,6 @@ fn execution_results_stats_should_succeed() {
                 WriteFlags::empty(),
             )
             .unwrap();
-            // Store the body.
             txn.put(
                 *fixture.db(Some("block_body")).unwrap(),
                 &block_headers[i].1.body_hash,
@@ -281,7 +272,6 @@ fn execution_results_stats_should_succeed() {
             .unwrap();
         }
 
-        // Insert the 4 deploys into the database.
         for i in 0..DEPLOY_COUNT {
             txn.put(
                 *fixture.db(Some("deploy_metadata")).unwrap(),
@@ -294,8 +284,6 @@ fn execution_results_stats_should_succeed() {
         txn.commit().unwrap();
     };
 
-    // Get the execution results summary and ensure it matches with the
-    // expected statistics.
     read_db::execution_results_summary(
         fixture.tmp_dir.as_ref(),
         Some(out_file_path.as_path()),
@@ -306,7 +294,6 @@ fn execution_results_stats_should_succeed() {
     let execution_results_summary: ExecutionResultsSummary =
         serde_json::from_str(&json_str).unwrap();
 
-    // Construct the expected statistics.
     let mut stats = ExecutionResultsStats::default();
     for (block_idx, (block_hash, _block_header)) in block_headers.iter().enumerate() {
         let _block_body = &block_bodies[block_idx];
@@ -338,8 +325,6 @@ fn execution_results_summary_invalid_key_should_fail() {
     if let Ok(mut txn) = env.begin_rw_txn() {
         let (_, block_header) = test_utils::mock_block_header(0);
         let bogus_hash = [0u8; 1];
-        // Insert a block header in the database with a key that can't be
-        // deserialized.
         txn.put(
             *fixture.db(Some("block_header")).unwrap(),
             &bogus_hash,
@@ -375,7 +360,6 @@ fn execution_results_summary_parsing_should_fail() {
 
     let env = &fixture.env;
     if let Ok(mut txn) = env.begin_rw_txn() {
-        // Store the header.
         txn.put(
             *fixture.db(Some("block_header")).unwrap(),
             &block_hash,
@@ -383,7 +367,6 @@ fn execution_results_summary_parsing_should_fail() {
             WriteFlags::empty(),
         )
         .unwrap();
-        // Store the body.
         txn.put(
             *fixture.db(Some("block_body")).unwrap(),
             &block_header.body_hash,
@@ -391,7 +374,6 @@ fn execution_results_summary_parsing_should_fail() {
             WriteFlags::empty(),
         )
         .unwrap();
-        // Store a bogus metadata under the deploy hash key we used before.
         txn.put(
             *fixture.db(Some("deploy_metadata")).unwrap(),
             &deploy_hash,
@@ -426,7 +408,7 @@ fn execution_results_summary_bogus_db_should_fail() {
         Some(out_file_path.as_path()),
         false,
     ) {
-        Err(Error::Database(_)) => { /* expected result */ }
+        Err(Error::Database(_)) => { }
         Err(error) => panic!("Got unexpected error: {error:?}"),
         Ok(_) => panic!("Command unexpectedly succeeded"),
     }
@@ -449,7 +431,7 @@ fn execution_results_summary_existing_output_should_fail() {
         Some(out_file_path.as_path()),
         false,
     ) {
-        Err(Error::Output(_)) => { /* expected result */ }
+        Err(Error::Output(_)) => { }
         Err(error) => panic!("Got unexpected error: {error:?}"),
         Ok(_) => panic!("Command unexpectedly succeeded"),
     }
