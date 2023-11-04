@@ -2,7 +2,6 @@ use std::result::Result;
 
 use lmdb::{Error as LmdbError, RoTransaction, RwTransaction, Transaction, WriteFlags};
 
-/// Reads the value under a key in a database using the given LMDB transaction.
 pub(crate) fn read_from_db<K: AsRef<[u8]>>(
     txn: &mut RoTransaction,
     db_name: &str,
@@ -13,7 +12,6 @@ pub(crate) fn read_from_db<K: AsRef<[u8]>>(
     Ok(value)
 }
 
-/// Writes a key-value pair in a database using the given LMDB transaction.
 pub(crate) fn write_to_db<K: AsRef<[u8]>, V: AsRef<[u8]>>(
     txn: &mut RwTransaction,
     db_name: &str,
@@ -25,8 +23,6 @@ pub(crate) fn write_to_db<K: AsRef<[u8]>, V: AsRef<[u8]>>(
     Ok(())
 }
 
-/// Copies the value under a key from the source database to the destination
-/// database and returns the raw value bytes.
 pub(crate) fn transfer_to_new_db<K: AsRef<[u8]>>(
     source_txn: &mut RoTransaction,
     destination_txn: &mut RwTransaction,
