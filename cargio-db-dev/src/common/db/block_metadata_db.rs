@@ -3,7 +3,7 @@ use std::{
     result::Result,
 };
 
-use casper_node::types::BlockSignatures;
+use master_node::types::BlockSignatures;
 
 use super::{Database, DeserializationError};
 
