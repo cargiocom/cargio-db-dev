@@ -5,12 +5,12 @@ use std::{
     result::Result,
 };
 
-use casper_hashing::Digest;
+use cargio_hashing::Digest;
 use lmdb::{Cursor, Environment, Transaction};
 use log::{info, warn};
 use serde_json::{self, Error as SerializationError};
 
-use casper_node::types::{BlockHash, BlockHeader};
+use master_node::types::{BlockHash, BlockHeader};
 
 use crate::common::{
     db::{self, BlockHeaderDatabase, Database, STORAGE_FILE_NAME},
@@ -108,8 +108,6 @@ pub fn latest_block_summary<P1: AsRef<Path>, P2: AsRef<Path>>(
     let storage_path = db_path.as_ref().join(STORAGE_FILE_NAME);
     let env = db::db_env(storage_path)?;
     let mut log_progress = false;
-    // Validate the output file early so that, in case this fails
-    // we don't unnecessarily read the whole database.
     let out_writer: Box<dyn Write> = if let Some(out_path) = output {
         let file = OpenOptions::new()
             .create_new(!overwrite)
