@@ -7,9 +7,9 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use casper_hashing::Digest;
-use casper_node::types::{BlockHash, BlockHeader};
-use casper_types::{EraId, ProtocolVersion, Timestamp};
+use cargio_hashing::Digest;
+use master_node::types::{BlockHash, BlockHeader};
+use cargio_types::{EraId, ProtocolVersion, Timestamp};
 
 #[cfg(test)]
 use crate::test_utils::MockBlockHeader;
