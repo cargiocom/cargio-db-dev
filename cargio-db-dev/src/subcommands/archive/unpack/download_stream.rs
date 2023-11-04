@@ -6,7 +6,7 @@ use std::{
 
 use futures::{io, AsyncRead, AsyncReadExt, TryStreamExt};
 use log::{info, warn};
-use tokio::runtime::{Builder as TokioRuntimeBuilder, Runtime};
+use tokio::runtime::{Builder as CargioRuntimeBuilder, Runtime};
 
 use super::Error;
 use crate::{
