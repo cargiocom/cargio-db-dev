@@ -87,7 +87,7 @@ fn unpack<P: AsRef<Path>>(input: Input, dest: P) -> Result<(), Error> {
 pub fn command(display_order: usize) -> Command<'static> {
     Command::new(COMMAND_NAME)
         .display_order(display_order)
-        .about("Downloads and decompresses a zstd tar archive of a casper-node storage instance.")
+        .about("Downloads and decompresses a zstd tar archive of a master-node storage instance.")
         .arg(
             Arg::new(URL)
                 .display_order(DisplayOrder::Url as usize)
