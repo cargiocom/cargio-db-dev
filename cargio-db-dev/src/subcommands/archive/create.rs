@@ -37,7 +37,7 @@ pub fn command(display_order: usize) -> Command<'static> {
     Command::new(COMMAND_NAME)
         .display_order(display_order)
         .about(
-            "Packs a casper-node storage instance to a tarball and then compresses it with zstd.",
+            "Packs a master-node storage instance to a tarball and then compresses it with zstd.",
         )
         .arg(
             Arg::new(DB)
