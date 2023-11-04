@@ -11,9 +11,9 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tempfile::{NamedTempFile, TempDir};
 
-use casper_hashing::Digest;
-use casper_node::types::{BlockHash, DeployHash, DeployMetadata};
-use casper_types::{
+use cargio_hashing::Digest;
+use cargio_node::types::{BlockHash, DeployHash, DeployMetadata};
+use cargio_types::{
     EraId, ExecutionEffect, ExecutionResult, ProtocolVersion, PublicKey, SecretKey, Timestamp,
     U256, U512,
 };
@@ -105,9 +105,6 @@ impl LmdbTestFixture {
     }
 }
 
-// This struct was created in order to generate `BlockHeaders` and then
-// insert them into a mock database. Once `Block::random` becomes part
-// of the public API of `casper-types`, this will no longer be needed.
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Serialize, Deserialize, Debug)]
 pub struct MockBlockHeader {
     pub parent_hash: BlockHash,
