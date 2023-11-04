@@ -7,7 +7,7 @@ mod tests;
 use std::{io::Error as IoError, path::Path};
 
 use bincode::Error as BincodeError;
-use casper_node::types::BlockHash;
+use master_node::types::BlockHash;
 use clap::{Arg, ArgMatches, Command};
 use lmdb::Error as LmdbError;
 use serde_json::Error as JsonSerializationError;
@@ -18,10 +18,8 @@ const DB_PATH: &str = "db-path";
 const OVERWRITE: &str = "overwrite";
 const OUTPUT: &str = "output";
 
-/// Errors encountered when operating on the storage database.
 #[derive(Debug, ThisError)]
 pub enum Error {
-    /// Database operation error.
     #[error("Error operating the database: {0}")]
     Database(#[from] LmdbError),
     #[error("Error deserializing raw key of block header DB element: {0}")]
@@ -30,7 +28,6 @@ pub enum Error {
     JsonSerialize(#[from] JsonSerializationError),
     #[error("Error writing output: {0}")]
     Output(#[from] IoError),
-    /// Parsing error on entry at index in the database.
     #[error("Error parsing element for block hash {0} in {1} DB: {2}")]
     Parsing(BlockHash, String, BincodeError),
     #[error("Error serializing execution results: {0}")]
