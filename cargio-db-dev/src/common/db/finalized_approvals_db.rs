@@ -3,7 +3,7 @@ use std::{
     result::Result,
 };
 
-use casper_node::types::FinalizedApprovals;
+use master_node::types::FinalizedApprovals;
 
 use super::{Database, DeserializationError};
 
