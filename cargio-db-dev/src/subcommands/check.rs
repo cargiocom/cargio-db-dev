@@ -127,7 +127,6 @@ fn check_db<P: AsRef<Path>>(
             _ => return Err(Error::UnknownDb(db_name.to_string())),
         }
     } else {
-        // Sanity check for `start_at`, already validated in arg parser.
         assert_eq!(start_at, 0);
         BlockBodyDatabase::check_db(&env, failfast, start_at)?;
         BlockBodyMerkleDatabase::check_db(&env, failfast, start_at)?;
