@@ -3,7 +3,7 @@ use std::time::{Duration, Instant};
 use lmdb::{RwTransaction, Transaction};
 use log::{info, warn};
 
-use casper_execution_engine::{
+use cargio_execution_engine::{
     core::engine_state::EngineState,
     storage::{
         global_state::lmdb::LmdbGlobalState,
@@ -12,8 +12,8 @@ use casper_execution_engine::{
         trie_store::lmdb::LmdbTrieStore,
     },
 };
-use casper_hashing::Digest;
-use casper_types::{
+use cargio_hashing::Digest;
+use cargio_types::{
     bytesrepr::{self, Bytes, ToBytes},
     Key, StoredValue,
 };
@@ -25,7 +25,6 @@ fn memoized_find_missing_descendants(
     missing_trie_keys: &mut Vec<Digest>,
     time_in_missing_trie_keys: &mut Duration,
 ) -> Result<(), anyhow::Error> {
-    // A first bytes of `0` indicates a leaf. We short-circuit the function here to speed things up.
     if let Some(0u8) = value_bytes.first() {
         return Ok(());
     }
@@ -34,8 +33,6 @@ fn memoized_find_missing_descendants(
         .map_err(|err| anyhow::anyhow!("couldn't deserialize trie: {:?}", err))?;
     match trie {
         Trie::Leaf { .. } => {
-            // If `bytesrepr` is functioning correctly, this should never be reached (see
-            // optimization above), but it is still correct do nothing here.
             warn!("did not expect to see a trie leaf in `find_missing_descendents` after shortcut");
         }
         Trie::Node { pointer_block } => {
@@ -86,7 +83,6 @@ pub fn copy_state_root(
     let mut time_searching_for_trie_keys = Duration::from_secs(0);
 
     while let Some(next_trie_key) = missing_trie_keys.pop() {
-        // For user feedback, update on progress if this takes longer than 10 seconds.
         if heartbeat_interval.elapsed().as_secs() > 10 {
             info!(
                 "trie migration progress: bytes copied {}, tries copied {}",
