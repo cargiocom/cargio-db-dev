@@ -4,7 +4,7 @@ use lmdb::{Transaction, WriteFlags};
 use once_cell::sync::Lazy;
 use tempfile::{self, NamedTempFile, TempDir};
 
-use casper_node::{
+use master_node::{
     rpcs::docs::DocExample,
     types::{BlockHeader, JsonBlockHeader},
 };
@@ -86,7 +86,6 @@ fn latest_block_should_succeed() {
     let fixture = LmdbTestFixture::new(vec!["block_header"], Some(STORAGE_FILE_NAME));
     let out_file_path = OUT_DIR.as_ref().join("latest_block_metadata.json");
 
-    // Create 2 block headers, height 0 and 1.
     let first_block = MockBlockHeader::default();
     let first_block_key = [0u8; 32];
 
@@ -96,7 +95,6 @@ fn latest_block_should_succeed() {
 
     let env = &fixture.env;
     let db = fixture.db(Some("block_header")).unwrap();
-    // Insert the 2 blocks into the database.
     if let Ok(mut txn) = env.begin_rw_txn() {
         txn.put(
             *db,
@@ -115,7 +113,6 @@ fn latest_block_should_succeed() {
         txn.commit().unwrap();
     };
 
-    // Get the latest block information and ensure it matches with the second block.
     read_db::latest_block_summary(
         fixture.tmp_dir.as_ref(),
         Some(out_file_path.as_path()),
@@ -127,21 +124,17 @@ fn latest_block_should_succeed() {
     let (mock_block_header_deserialized, _network_name) = block_info.into_mock();
     assert_eq!(mock_block_header_deserialized, second_block);
 
-    // Delete the second block from the database.
     if let Ok(mut txn) = env.begin_rw_txn() {
         txn.del(*db, &second_block_key, None).unwrap();
         txn.commit().unwrap();
     };
 
-    // Now latest block summary should return information about the first block.
-    // Given that the output exists, another run on the same destination path should fail.
     assert!(read_db::latest_block_summary(
         fixture.tmp_dir.as_ref(),
         Some(out_file_path.as_path()),
         false
     )
     .is_err());
-    // We use `overwrite` on the previous output file.
     read_db::latest_block_summary(
         fixture.tmp_dir.as_ref(),
         Some(out_file_path.as_path()),
