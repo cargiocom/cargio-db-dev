@@ -1,14 +1,14 @@
 use std::slice;
 
-use casper_execution_engine::storage::{
+use cargio_execution_engine::storage::{
     store::StoreExt,
     transaction_source::{lmdb::LmdbEnvironment, TransactionSource},
     trie::Trie,
     trie_store::lmdb::LmdbTrieStore,
 };
-use casper_hashing::Digest;
-use casper_node::types::{BlockHash, DeployHash, DeployMetadata};
-use casper_types::bytesrepr::{Bytes, ToBytes};
+use cargio_hashing::Digest;
+use master_node::types::{BlockHash, DeployHash, DeployMetadata};
+use cargio_types::bytesrepr::{Bytes, ToBytes};
 use lmdb::{DatabaseFlags, Error as LmdbError, Transaction, WriteFlags};
 
 use crate::{
@@ -39,7 +39,6 @@ fn transfer_data_between_dbs() {
 
     {
         let env = &source_fixture.env;
-        // Insert the 3 blocks into the database.
         if let Ok(mut txn) = env.begin_rw_txn() {
             for (i, deploy_hash) in deploy_hashes.iter().enumerate().take(DATA_COUNT) {
                 txn.put(
@@ -180,11 +179,9 @@ fn transfer_blocks() {
     ];
 
     let env = &source_fixture.env;
-    // Insert the 3 blocks into the database.
     {
         let mut txn = env.begin_rw_txn().unwrap();
         for i in 0..BLOCK_COUNT {
-            // Store the header.
             txn.put(
                 *source_fixture
                     .db(Some(BlockHeaderDatabase::db_name()))
@@ -194,7 +191,6 @@ fn transfer_blocks() {
                 WriteFlags::empty(),
             )
             .unwrap();
-            // Store the body.
             txn.put(
                 *source_fixture
                     .db(Some(BlockBodyDatabase::db_name()))
@@ -206,7 +202,6 @@ fn transfer_blocks() {
             .unwrap();
         }
 
-        // Insert the 4 deploys into the deploys and deploy_metadata databases.
         for i in 0..DEPLOY_COUNT {
             txn.put(
                 *source_fixture
@@ -217,7 +212,6 @@ fn transfer_blocks() {
                 WriteFlags::empty(),
             )
             .unwrap();
-            // Add mock deploy data in the database.
             txn.put(
                 *source_fixture.db(Some(DeployDatabase::db_name())).unwrap(),
                 &deploy_hashes[i],
@@ -331,7 +325,6 @@ fn transfer_blocks() {
 
     let block_hash_1 = block_headers[1].0;
 
-    // Put some mock data in the transfer DB under block hash 1.
     {
         let mut txn = source_fixture.env.begin_rw_txn().unwrap();
         txn.put(
@@ -446,11 +439,9 @@ fn transfer_global_state_information() {
         .expect("should be able to parse max db size");
     let source_env = LmdbEnvironment::new(source_tmp_dir.path(), max_db_size, 512, true).unwrap();
     let source_store = LmdbTrieStore::new(&source_env, None, DatabaseFlags::empty()).unwrap();
-    // Construct mock data.
     let data = create_data();
 
     {
-        // Put the generated data into the source trie.
         let mut txn = source_env.create_read_write_txn().unwrap();
         let items = data.iter().map(Into::into);
         source_store.put_many(&mut txn, items).unwrap();
@@ -463,8 +454,6 @@ fn transfer_global_state_information() {
     let (_destination_state, dst_env) =
         create_execution_engine(destination_tmp_dir.path(), max_db_size, true).unwrap();
 
-    // Copy from `node2`, the root of the created trie. All data under node 2,
-    // which has leaf 2 and 3 under it, should be copied.
     global_state::transfer_global_state(
         source_tmp_dir.path(),
         destination_tmp_dir.path(),
@@ -482,10 +471,7 @@ fn transfer_global_state_information() {
             match entry {
                 Some(trie) => {
                     let trie_in_data = data.iter().find(|test_data| test_data.1 == trie);
-                    // Check we are not missing anything since all data under
-                    // node 2 should be copied.
                     assert!(trie_in_data.is_some());
-                    // Hashes should be equal.
                     assert_eq!(
                         trie_in_data.unwrap().0,
                         Digest::hash(&trie.to_bytes().unwrap())
