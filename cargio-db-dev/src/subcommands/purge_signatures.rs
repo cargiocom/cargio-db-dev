@@ -7,8 +7,8 @@ mod tests;
 use std::{collections::BTreeSet, path::Path};
 
 use bincode::Error as BincodeError;
-use casper_node::types::BlockHash;
-use casper_types::EraId;
+use master_node::types::BlockHash;
+use cargio_types::EraId;
 use clap::{Arg, ArgMatches, Command};
 use lmdb::Error as LmdbError;
 use thiserror::Error as ThisError;
@@ -18,27 +18,22 @@ const DB_PATH: &str = "db-path";
 const NO_FINALITY: &str = "no-finality";
 const WEAK_FINALITY: &str = "weak-finality";
 
-/// Errors encountered when operating on the storage database.
 #[derive(Debug, ThisError)]
 pub enum Error {
     #[error("Block list is empty")]
     EmptyBlockList,
     #[error("No blocks found in the block header database")]
     EmptyDatabase,
-    /// Database operation error.
     #[error("Error operating the database: {0}")]
     Database(#[from] LmdbError),
     #[error("Found duplicate block header with height {0}")]
     DuplicateBlock(u64),
-    /// Parsing error on entry in the block header database.
     #[error("Error parsing block header with hash {0}: {1}")]
     HeaderParsing(BlockHash, BincodeError),
     #[error("Missing switch block with weights for era {0}")]
     MissingEraWeights(EraId),
-    /// Serialization error for an entry in the signatures database.
     #[error("Error serializing block signatures for block hash {0}: {1}")]
     Serialize(BlockHash, BincodeError),
-    /// Parsing error on entry at index in the signatures database.
     #[error("Error parsing block signatures for block hash {0}: {1}")]
     SignaturesParsing(BlockHash, BincodeError),
 }
