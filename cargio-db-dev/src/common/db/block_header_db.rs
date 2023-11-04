@@ -3,7 +3,7 @@ use std::{
     result::Result,
 };
 
-use casper_node::types::BlockHeader;
+use master_node::types::BlockHeader;
 
 use super::{Database, DeserializationError};
 
