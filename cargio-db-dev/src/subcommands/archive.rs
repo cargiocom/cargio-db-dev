@@ -41,7 +41,7 @@ impl From<Error> for SubcommandError {
 pub fn command(display_order: usize) -> Command<'static> {
     Command::new(COMMAND_NAME)
         .display_order(display_order)
-        .about("Utilities for working with a compressed archive of a casper-node storage instance.")
+        .about("Utilities for working with a compressed archive of a master-node storage instance.")
         .subcommand(create::command(DisplayOrder::Create as usize))
         .subcommand(unpack::command(DisplayOrder::Unpack as usize))
 }
