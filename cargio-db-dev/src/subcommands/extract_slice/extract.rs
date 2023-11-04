@@ -1,7 +1,7 @@
 use std::path::Path;
 
-use casper_hashing::Digest;
-use casper_node::types::BlockHash;
+use cargio_hashing::Digest;
+use master_node::types::BlockHash;
 
 use super::{global_state, storage, Error};
 
