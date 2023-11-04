@@ -9,7 +9,7 @@ use lmdb::{Cursor, Environment, Transaction};
 use log::{info, warn};
 use serde_json::{self, Error as JsonSerializationError};
 
-use casper_node::types::{BlockHash, BlockHeader, DeployMetadata};
+use master_node::types::{BlockHash, BlockHeader, DeployMetadata};
 
 use crate::common::{
     db::{
@@ -60,15 +60,12 @@ fn get_execution_results_stats(
             }
         }
 
-        // Go through all the block headers in the database.
         for (idx, (block_hash_raw, raw_val)) in cursor.iter().enumerate() {
-            // Deserialize the block hash.
             let block_hash = BlockHash::new(
                 block_hash_raw
                     .try_into()
                     .map_err(|_| Error::InvalidKey(idx))?,
             );
-            // Deserialize the header.
             let header: BlockHeader = bincode::deserialize(raw_val).map_err(|bincode_err| {
                 Error::Parsing(
                     block_hash,
@@ -76,9 +73,7 @@ fn get_execution_results_stats(
                     bincode_err,
                 )
             })?;
-            // Get the body hash for this block.
             let block_body_raw = txn.get(block_body_db, header.body_hash())?;
-            // Get the body of this block.
             let block_body: BlockBody =
                 bincode::deserialize(block_body_raw).map_err(|bincode_err| {
                     Error::Parsing(
@@ -88,13 +83,9 @@ fn get_execution_results_stats(
                     )
                 })?;
 
-            // Set of execution results of this block.
             let mut execution_results = vec![];
 
-            // Go through all the deploys in this block and get the execution
-            // result of each one.
             for deploy_hash in block_body.deploy_hashes() {
-                // Get this deploy's metadata.
                 let metadata_raw = txn.get(deploy_metadata_db, &deploy_hash)?;
                 let mut metadata: DeployMetadata =
                     bincode::deserialize(metadata_raw).map_err(|bincode_err| {
@@ -104,14 +95,11 @@ fn get_execution_results_stats(
                             bincode_err,
                         )
                     })?;
-                // Extract the execution result of this deploy for the current block.
                 if let Some(execution_result) = metadata.execution_results.remove(&block_hash) {
-                    // Add it to this block's set of execution results.
                     execution_results.push(execution_result);
                 }
             }
 
-            // Update the statistics with this block's execution results.
             stats.feed(execution_results)?;
 
             if let Some(progress_tracker) = maybe_progress_tracker.as_mut() {
@@ -137,8 +125,6 @@ pub fn execution_results_summary<P1: AsRef<Path>, P2: AsRef<Path>>(
     let storage_path = db_path.as_ref().join(STORAGE_FILE_NAME);
     let env = db::db_env(storage_path)?;
     let mut log_progress = false;
-    // Validate the output file early so that, in case this fails
-    // we don't unnecessarily read the whole database.
     let out_writer: Box<dyn Write> = if let Some(out_path) = output {
         let file = OpenOptions::new()
             .create_new(!overwrite)
