@@ -3,7 +3,7 @@ use std::{
     result::Result,
 };
 
-use casper_types::Transfer;
+use cargio_types::Transfer;
 
 use super::{Database, DeserializationError};
 
