@@ -6,26 +6,22 @@ use std::{
 
 use log::info;
 
-use casper_execution_engine::{
+use cargio_execution_engine::{
     core::engine_state::{EngineConfig, EngineState},
     storage::{
         global_state::lmdb::LmdbGlobalState, transaction_source::lmdb::LmdbEnvironment,
         trie_store::lmdb::LmdbTrieStore,
     },
 };
-use casper_hashing::Digest;
-use casper_node::{storage::Storage, StorageConfig, WithDir};
-use casper_types::ProtocolVersion;
+use cargio_hashing::Digest;
+use master_node::{storage::Storage, StorageConfig, WithDir};
+use cargio_types::ProtocolVersion;
 use lmdb::DatabaseFlags;
 
 use crate::common::db::TRIE_STORE_FILE_NAME;
 
-/// LMDB max readers
-///
-/// The default value is chosen to be the same as the node itself.
 const DEFAULT_MAX_READERS: u32 = 512;
 
-/// Loads an existing execution engine.
 pub fn load_execution_engine(
     ee_lmdb_path: impl AsRef<Path>,
     default_max_db_size: usize,
@@ -53,7 +49,6 @@ pub fn load_execution_engine(
     ))
 }
 
-/// Create an lmdb environment at a given path.
 fn create_lmdb_environment(
     lmdb_path: impl AsRef<Path>,
     default_max_db_size: usize,
@@ -68,7 +63,6 @@ fn create_lmdb_environment(
     Ok(lmdb_environment)
 }
 
-/// Creates a new execution engine.
 pub fn create_execution_engine(
     ee_lmdb_path: impl AsRef<Path>,
     default_max_db_size: usize,
@@ -108,12 +102,10 @@ pub fn create_storage(chain_download_path: impl AsRef<Path>) -> Result<Storage, 
         None,
         ProtocolVersion::from_parts(0, 0, 0),
         false,
-        // Works around needing to add "network name" to the path, instead a caller can
-        // reference the exact directory.
         #[cfg(not(test))]
         ".",
         #[cfg(test)]
-        "casper",
+        "cargio",
     )?)
 }
 
