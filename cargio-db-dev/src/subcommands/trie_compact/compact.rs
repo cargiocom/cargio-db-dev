@@ -6,7 +6,7 @@ use std::{
 
 use log::info;
 
-use casper_hashing::Digest;
+use cargio_hashing::Digest;
 
 use crate::common::db::TRIE_STORE_FILE_NAME;
 
@@ -15,14 +15,10 @@ use super::{
     Error,
 };
 
-/// Defines behavior for opening destination trie store.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DestinationOptions {
-    /// `data.lmdb` in destination directory will be appended if it exists.
     Append,
-    /// `data.lmdb` in destination directory will be overwritten if it exists.
     Overwrite,
-    /// `data.lmdb` must not exist in destination directory.
     New,
 }
 
@@ -108,7 +104,6 @@ fn validate_trie_paths<P1: AsRef<Path>, P2: AsRef<Path>>(
         }
     }
 
-    // Replace `canonicalize` with `fs::absolute` when it becomes stable.
     if source_trie_path
         .as_ref()
         .canonicalize()
@@ -126,12 +121,6 @@ fn validate_trie_paths<P1: AsRef<Path>, P2: AsRef<Path>>(
     Ok(())
 }
 
-/// Compacts a source trie and outputs the result to the destination trie.
-///
-/// The function first retrieves the highest block hash from storage and
-/// compacting starts from that state root hash. Each descendant of that
-/// block's hash is copied to the destination trie. This process is repeated
-/// for all the remaining blocks, from highest to lowest.
 pub fn trie_compact<P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>>(
     storage_path: P1,
     source_trie_path: P2,
@@ -149,7 +138,6 @@ pub fn trie_compact<P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>>(
         create_execution_engine(destination_trie_path, max_db_size, true)
             .map_err(Error::CreateDestTrie)?;
 
-    // Create a separate lmdb for block/deploy storage at chain_download_path.
     let storage = create_storage(&storage_path).map_err(Error::OpenStorage)?;
 
     let mut block = match storage
