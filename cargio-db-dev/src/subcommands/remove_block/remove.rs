@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use casper_node::types::{BlockHash, BlockHeader, DeployMetadata};
+use master_node::types::{BlockHash, BlockHeader, DeployMetadata};
 use lmdb::{Error as LmdbError, Transaction, WriteFlags};
 use log::warn;
 
@@ -52,10 +52,7 @@ pub(crate) fn remove_block<P: AsRef<Path>>(db_path: P, block_hash: BlockHash) ->
     };
 
     if let Some(body) = maybe_body {
-        // Go through all the deploys in this block and get the execution
-        // result of each one.
         for deploy_hash in body.deploy_hashes() {
-            // Get this deploy's metadata.
             let mut metadata: DeployMetadata = match txn.get(deploy_metadata_db, deploy_hash) {
                 Ok(raw_metadata) => bincode::deserialize(raw_metadata).map_err(|bincode_err| {
                     Error::ExecutionResultsParsing(block_hash, *deploy_hash, bincode_err)
@@ -63,7 +60,6 @@ pub(crate) fn remove_block<P: AsRef<Path>>(db_path: P, block_hash: BlockHash) ->
                 Err(LmdbError::NotFound) => return Err(Error::MissingDeploy(*deploy_hash)),
                 Err(lmdb_error) => return Err(lmdb_error.into()),
             };
-            // Extract the execution result of this deploy for the current block.
             if let Some(_execution_result) = metadata.execution_results.remove(&block_hash) {
                 if metadata.execution_results.is_empty() {
                     txn.del(deploy_metadata_db, deploy_hash, None)?;
