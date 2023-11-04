@@ -3,7 +3,6 @@ use std::result::Result;
 use lmdb::{Database, Error, Transaction};
 use lmdb_sys::{mdb_stat, MDB_stat};
 
-/// Retrieves the number of entries in a database.
 pub fn entry_count<T: Transaction>(txn: &'_ T, database: Database) -> Result<usize, Error> {
     let mut stat = MDB_stat {
         ms_psize: 0,
@@ -42,7 +41,6 @@ mod tests {
 
         let first_dummy_input = [0u8, 1u8];
         let second_dummy_input = [1u8, 2u8];
-        // Insert the first entry into the database.
         if let Ok(mut txn) = env.begin_rw_txn() {
             txn.put(
                 *db,
@@ -59,7 +57,6 @@ mod tests {
             txn.commit().unwrap();
         }
 
-        // Insert the second entry into the database.
         if let Ok(mut txn) = env.begin_rw_txn() {
             txn.put(
                 *db,
@@ -76,7 +73,6 @@ mod tests {
             txn.commit().unwrap();
         };
 
-        // Delete the first entry from the database.
         if let Ok(mut txn) = env.begin_rw_txn() {
             txn.del(*db, &first_dummy_input, None).unwrap();
             txn.commit().unwrap();
