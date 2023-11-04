@@ -1,4 +1,4 @@
-use casper_node::types::DeployMetadata;
+use cargio_node::types::DeployMetadata;
 use std::{
     fmt::{Display, Formatter, Result as FormatterResult},
     result::Result,
