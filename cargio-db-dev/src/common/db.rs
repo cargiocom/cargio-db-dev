@@ -37,7 +37,7 @@ use lmdb::{Cursor, Environment, EnvironmentFlags, Error as LmdbError, RoCursor, 
 use log::info;
 use thiserror::Error;
 
-use casper_types::bytesrepr::Error as BytesreprError;
+use cargio_types::bytesrepr::Error as BytesreprError;
 
 pub const STORAGE_FILE_NAME: &str = "storage.lmdb";
 pub const TRIE_STORE_FILE_NAME: &str = "data.lmdb";
@@ -58,14 +58,10 @@ impl From<BytesreprError> for DeserializationError {
     }
 }
 
-/// Errors encountered when operating on the storage database.
 #[derive(Debug, Error)]
 pub enum Error {
-    /// Errors accumulated when parsing a database with "--no-failfast".
     Accumulated(Vec<Self>),
-    /// Parsing error on entry at index in the database.
     Parsing(usize, DeserializationError),
-    /// Database operation error.
     Database(#[from] LmdbError),
 }
 
@@ -100,10 +96,8 @@ pub fn db_env<P: AsRef<Path>>(path: P) -> Result<Environment, LmdbError> {
 pub trait Database {
     fn db_name() -> &'static str;
 
-    /// Parses a value of an entry in a database.
     fn parse_element(bytes: &[u8]) -> Result<(), DeserializationError>;
 
-    /// Parses all elements of a database by trying to deserialize them sequentially.
     fn parse_elements(mut cursor: RoCursor, failfast: bool, start_at: usize) -> Result<(), Error> {
         if start_at > 0 {
             info!("Skipping {} entries.", start_at);
@@ -130,7 +124,6 @@ pub trait Database {
         Ok(())
     }
 
-    /// Validates the database by ensuring every value of an entry can be parsed.
     fn check_db(env: &Environment, failfast: bool, start_at: usize) -> Result<(), Error> {
         info!("Checking {} database.", Self::db_name());
         let txn = env.begin_ro_txn()?;
