@@ -19,8 +19,6 @@ pub(crate) fn chunk_count_after_partition(data_size: usize) -> usize {
 
 pub(crate) fn summarize_map(map: &BTreeMap<usize, usize>) -> CollectionStatistics {
     let elem_count: usize = map.values().sum();
-    // If we have an even number of elements, we pick the greater of the
-    // 2 elements in the middle.
     let median_pos = elem_count / 2;
     let mut sum = 0usize;
     let mut current_idx = 0usize;
@@ -46,25 +44,15 @@ pub(crate) fn summarize_map(map: &BTreeMap<usize, usize>) -> CollectionStatistic
     CollectionStatistics::new(average, median, max)
 }
 
-/// Holds the statistics of execution results present in a node database.
 #[derive(Debug, Default)]
 pub struct ExecutionResultsStats {
-    /// Ordered frequency list of execution results sizes (bincode encoded
-    /// byte length).
     pub execution_results_size: BTreeMap<usize, usize>,
-    /// Ordered frequency list of execution results chunk counts (number of
-    /// chunks the bytesrepr encoded execution results would be split into,
-    /// according to `CHUNK_SIZE_BYTES`).
     pub chunk_count: BTreeMap<usize, usize>,
 }
 
 impl ExecutionResultsStats {
     pub fn feed(&mut self, execution_results: Vec<ExecutionResult>) -> Result<(), Error> {
-        // Calculate the length of the bincode serialized execution
-        // results.
         let bincode_encoded_execution_results_size = bincode::serialized_size(&execution_results)?;
-        // Increment the frequency of the calculated size or create a new entry
-        // with frequency 1.
         if let Some(count) = self
             .execution_results_size
             .get_mut(&(bincode_encoded_execution_results_size as usize))
@@ -75,15 +63,9 @@ impl ExecutionResultsStats {
                 .insert(bincode_encoded_execution_results_size as usize, 1);
         }
 
-        // Calculate the length of the bytesrepr serialized execution
-        // results.
         let bytesrepr_encoded_execution_results_length = execution_results.serialized_length();
-        // Calculate the number of chunks this set of execution results would
-        // be split into.
         let chunks_in_execution_results =
             chunk_count_after_partition(bytesrepr_encoded_execution_results_length);
-        // Increment the frequency of the calculated chunk count or create a
-        // new entry with frequency 1.
         if let Some(count) = self.chunk_count.get_mut(&chunks_in_execution_results) {
             *count += 1;
         } else {
@@ -93,14 +75,10 @@ impl ExecutionResultsStats {
     }
 }
 
-/// Auxiliary struct to hold statistics about a data set.
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub(crate) struct CollectionStatistics {
-    /// Average of the set.
     pub(crate) average: f64,
-    /// Median of the set.
     pub(crate) median: usize,
-    /// Maximum of the set.
     pub(crate) max: usize,
 }
 
@@ -122,14 +100,9 @@ impl CollectionStatistics {
     }
 }
 
-/// Summary of statistics of a [`ExecutionResultsStats`].
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub(crate) struct ExecutionResultsSummary {
-    /// Statistics of bincode encoded sizes of execution results per block, in
-    /// bytes.
     pub(crate) execution_results_size: CollectionStatistics,
-    /// Statistics of counts of bytesrepr encoded chunks of execution results
-    /// per block.
     pub(crate) chunks_statistics: CollectionStatistics,
 }
 
