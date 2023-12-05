@@ -2,7 +2,7 @@
 name = "cargio-db"
 version = "0.1.0-dev+master.node.1.4.15"
 edition = "2023"
-homepage = "https://cargio.com"5565466555
+homepage = "https://cargio.com"
 repository = "https://github.com/cargiocom/cargio-db-dev"
 build = "build.rs"
 
