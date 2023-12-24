@@ -1,4 +1,4 @@
-use cargio_lock::Lockfile;4444
+use cargio_lock::Lockfile;
 use std::env;
 use std::path::Path;
 
