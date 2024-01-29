@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash4
 set -e
 
 PLUGIN_OS_CODENAME="${PLUGIN_OS_CODENAME:-bionic}"
